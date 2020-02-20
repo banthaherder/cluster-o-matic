@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    privateKeySecretRef:
+     name: letsencrypt-prod
+    email: dawson@banthacloud.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+    - selector:
+        dnsZones:
+          - "banthabot.com"
+      dns01:
+        route53:
+          region: us-west-2
+          role: arn:aws:iam::570942073824:role/EKSDemo/kiam/EKSKiamCertManger

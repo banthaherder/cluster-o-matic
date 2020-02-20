@@ -1,0 +1,48 @@
+image:
+  repository: gcr.io/google_containers/metrics-server-amd64
+  tag: v0.3.6
+  pullPolicy: IfNotPresent
+
+affinity: {}
+  # nodeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     nodeSelectorTerms:
+  #     - matchExpressions:
+  #       - key: eks.amazonaws.com/nodegroup
+  #         operator: In
+  #         values:
+  #           - eks-demo-ng-private
+
+replicas: 1
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: https
+    scheme: HTTPS
+  initialDelaySeconds: 20
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: https
+    scheme: HTTPS
+  initialDelaySeconds: 20
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["all"]
+  readOnlyRootFilesystem: true
+  runAsGroup: 10001
+  runAsNonRoot: true
+  runAsUser: 10001
+
+service:
+  annotations: {}
+  labels: {}
+  #  Add these labels to have metrics-server show up in `kubectl cluster-info`
+  #  kubernetes.io/cluster-service: "true"
+  #  kubernetes.io/name: "Metrics-server"
+  port: 443
+  type: ClusterIP

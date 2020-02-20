@@ -1,0 +1,1 @@
+cluster_context = "arn:aws:eks:us-west-2:570942073824:cluster/Oceanus"

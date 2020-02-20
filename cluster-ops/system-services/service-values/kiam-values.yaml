@@ -1,0 +1,74 @@
+agent:
+  enabled: true
+  name: agent
+
+  image:
+    repository: quay.io/uswitch/kiam
+    tag: v3.3
+    pullPolicy: IfNotPresent
+
+  log:
+    jsonOutput: true
+    level: info
+
+  host:
+    iptables: false
+    port: 8181
+    interface: cali+
+
+  gatewayTimeoutCreation: 50ms
+
+  ## Agent TLS Certificate filenames
+  tlsCerts:
+    certFileName: cert
+    keyFileName: key
+    caFileName: ca
+
+server:
+  enabled: true
+
+  name: server
+
+  image:
+    repository: quay.io/uswitch/kiam
+    tag: v3.3
+    pullPolicy: IfNotPresent
+
+  log:
+    jsonOutput: true
+    level: info
+
+  service:
+    port: 443
+    targetPort: 443
+
+  gatewayTimeoutCreation: 50ms
+
+  probes:
+    serverAddress: 127.0.0.1
+
+  roleBaseArn: null
+
+  cache:
+    syncInterval: 1m
+  assumeRoleArn: null
+  sessionDuration: 15m
+  useHostNetwork: false
+
+  ## Agent TLS Certificate filenames
+  tlsCerts:
+    certFileName: cert
+    keyFileName: key
+    caFileName: ca
+
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+serviceAccounts:
+  agent:
+    create: true
+    name:
+  server:
+    create: true
+    name:

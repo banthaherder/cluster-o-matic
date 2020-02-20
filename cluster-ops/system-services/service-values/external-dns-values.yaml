@@ -1,0 +1,184 @@
+image:
+  registry: docker.io
+  repository: bitnami/external-dns
+  tag: 0.6.0-debian-10-r0
+  pullPolicy: IfNotPresent
+
+sources:
+- service
+- ingress
+
+provider: aws
+
+## Flags related to processing sources
+## ref: https://github.com/kubernetes-incubator/external-dns/blob/master/pkg/apis/externaldns/types.go#L272
+##
+## Limit sources of endpoints to a specific namespace (default: all namespaces)
+##
+namespace: "apps"
+
+combineFQDNAnnotation: false
+## Ignore hostname annotation when generating DNS names, valid only when fqdn-template is set
+##
+ignoreHostnameAnnotation: false
+## Allow external-dns to publish DNS records for ClusterIP services
+##
+publishInternalServices: false
+## Allow external-dns to publish host-ip for headless services
+##
+publishHostIP: false
+
+## AWS configuration to be set via arguments/env. variables
+##
+aws:
+
+  ## AWS region
+  ##
+  region: "us-west-2"
+  ## Zone Filter. Available values are: public, private
+  ##
+  zoneType: "public"
+  ## AWS Role to assume
+  ##
+  assumeRoleArn: "arn:aws:iam::570942073824:role/EKSDemo/kiam/EKSKiamExternalDNS"
+  ## Maximum number of changes that will be applied in each batch
+  ##
+  batchChangeSize: 1000
+  ## Enable AWS evaluation of target health. Available values are: true, false
+  ##
+  evaluateTargetHealth: false
+
+## Replica count
+##
+replicas: 2
+
+## Affinity for pod assignment (this value is evaluated as a template)
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+## Node labels for pod assignment (this value is evaluated as a template)
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector
+##
+nodeSelector: {}
+## Tolerations for pod assignment (this value is evaluated as a template)
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#taints-and-tolerations-beta-feature
+##
+tolerations: []
+## Annotations for external-dns pods
+##
+podAnnotations:
+  iam.amazonaws.com/role: EKSKiamExternalDNS
+## Additional labels for the pod(s).
+##
+podLabels: {}
+## Pod priority class name
+##
+priorityClassName: ""
+
+## Kubernetes svc configutarion
+##
+service:
+  ## Kubernetes svc type
+  ##
+  type: ClusterIP
+  port: 7979
+  ## Specify the nodePort value for the LoadBalancer and NodePort service types for the client port
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  ##
+  # nodePort:
+  ## Static clusterIP or None for headless services
+  ##
+  # clusterIP: ""
+  ## External IP list to use with ClusterIP service type
+  ##
+  externalIPs: []
+  ## Use loadBalancerIP to request a specific static IP,
+  ## otherwise leave blank
+  ##
+  # loadBalancerIP:
+  ## Address that are allowed when svc is LoadBalancer
+  ##
+  loadBalancerSourceRanges: []
+  ## Provide any additional annotations which may be required. This can be used to
+  ## set the LoadBalancer service type to internal only.
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+  ##
+  annotations: {}
+
+## RBAC parameteres
+## https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+##
+rbac:
+  create: true
+  ## Service Account for pods
+  ## https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+  ##
+  serviceAccountName: default
+  ## Annotations for the Service Account
+  ##
+  serviceAccountAnnotations: {}
+  ## RBAC API version
+  ##
+  apiVersion: v1beta1
+  ## Podsecuritypolicy
+  ##
+  pspEnabled: false
+
+## Kubernetes Security Context
+## https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+##
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+podSecurityContext:
+  fsGroup: 1001
+  runAsUser: 1001
+  runAsNonRoot: true
+
+## Configure resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+##
+resources: {}
+#  limits:
+#    cpu: 50m
+#    memory: 50Mi
+#  requests:
+#    memory: 50Mi
+#    cpu: 10m
+
+## Liveness Probe. The block is directly forwarded into the deployment, so you can use whatever livenessProbe configuration you want.
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+##
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 2
+  successThreshold: 1
+## Readiness Probe. The block is directly forwarded into the deployment, so you can use whatever readinessProbe configuration you want.
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+##
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+## Prometheus Exporter / Metrics
+##
+metrics:
+  enabled: true
+  ## Metrics exporter pod Annotation and Labels
+  ##
+  # podAnnotations:
+  #   prometheus.io/scrape: "true"
+  #   prometheus.io/port: "7979"

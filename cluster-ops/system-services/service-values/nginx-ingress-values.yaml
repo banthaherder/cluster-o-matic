@@ -1,0 +1,203 @@
+## nginx configuration
+## Ref: https://github.com/kubernetes/ingress/blob/master/controllers/nginx/configuration.md
+##
+controller:
+  name: controller
+  image:
+    repository: quay.io/kubernetes-ingress-controller/nginx-ingress-controller
+    tag: "0.29.0"
+    pullPolicy: IfNotPresent
+    # www-data -> uid 101
+    runAsUser: 101
+    allowPrivilegeEscalation: true
+  # Enables External DNS to get ELB alias for record setting
+  publishService:
+    enabled: true
+
+  # Configures the ports the nginx-controller listens on
+  containerPort:
+    http: 80
+    https: 443
+
+  ## Use host ports 80 and 443
+  daemonset:
+    useHostPort: false
+
+    hostPorts:
+      http: 80
+      https: 443
+
+  ## Name of the ingress class to route through this controller
+  ##
+  ingressClass: nginx
+
+  ## DaemonSet or Deployment
+  ##
+  kind: Deployment
+
+  # The update strategy to apply to the Deployment or DaemonSet
+  ##
+  updateStrategy:
+   rollingUpdate:
+     maxUnavailable: 1
+   type: RollingUpdate
+
+  # minReadySeconds to avoid killing pods before we are ready
+  ##
+  minReadySeconds: 0
+
+  ## Affinity and anti-affinity
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: eks.amazonaws.com/nodegroup
+            operator: In
+            values:
+              - eks-demo-ng-public
+
+  ## terminationGracePeriodSeconds
+  ##
+  terminationGracePeriodSeconds: 60
+
+  ## Liveness and readiness probe values
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+  ##
+  livenessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+    port: 10254
+  readinessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+    port: 10254
+
+  replicaCount: 1
+
+  minAvailable: 1
+
+  resources:
+   limits:
+     cpu: 200m
+     memory: 128Mi
+   requests:
+     cpu: 200m
+     memory: 128Mi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 75
+
+  service:
+    enabled: true
+    enableHttp: true
+    enableHttps: true
+    healthCheckNodePort: 0
+
+    ports:
+      http: 80
+      https: 443
+
+    targetPorts:
+      http: http
+      https: https
+
+    type: LoadBalancer
+
+    # type: NodePort
+    # nodePorts:
+    #   http: 32080
+    #   https: 32443
+    #   tcp:
+    #     8080: 32808
+    nodePorts:
+      http: ""
+      https: ""
+      tcp: {}
+      udp: {}
+
+revisionHistoryLimit: 10
+
+## Default 404 backend
+##
+defaultBackend:
+  enabled: true
+
+  name: default-backend
+  image:
+    repository: k8s.gcr.io/defaultbackend-amd64
+    tag: "1.5"
+    pullPolicy: IfNotPresent
+    runAsUser: 65534
+  
+  port: 8080
+
+  livenessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 5
+  readinessProbe:
+    failureThreshold: 6
+    initialDelaySeconds: 0
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 5
+
+  replicaCount: 1
+
+  minAvailable: 1
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: eks.amazonaws.com/nodegroup
+            operator: In
+            values:
+              - eks-demo-ng-private
+
+  resources:
+    limits:
+      cpu: 15m
+      memory: 50Mi
+    requests:
+      cpu: 15m
+      memory: 50Mi
+
+  metrics:
+    port: 10254
+    # if this port is changed, change healthz-port: in extraArgs: accordingly
+    enabled: true
+
+    service:
+      servicePort: 9913
+      type: ClusterIP
+
+  service:
+    servicePort: 80
+    type: ClusterIP
+
+  priorityClassName: ""
+
+## Enable RBAC as per https://github.com/kubernetes/ingress/tree/master/examples/rbac/nginx and https://github.com/kubernetes/ingress/issues/266
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name:

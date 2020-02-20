@@ -1,0 +1,82 @@
+
+# Default values for cert-manager.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+global:
+  rbac:
+    create: true
+
+  podSecurityPolicy:
+    useAppArmor: true
+
+  # Set the verbosity of cert-manager. Range of 0 - 6 with 6 being the most verbose.
+  logLevel: 2
+
+  leaderElection:
+    # Override the namespace used to store the ConfigMap for leader election
+    namespace: "kube-system"
+
+replicaCount: 1
+
+strategy: {}
+  # type: RollingUpdate
+  # rollingUpdate:
+  #   maxSurge: 0
+  #   maxUnavailable: 1
+
+image:
+  repository: quay.io/jetstack/cert-manager-controller
+  # Override the image tag to deploy by setting this variable.
+  # If no value is set, the chart's appVersion will be used.
+  # tag: canary
+  pullPolicy: IfNotPresent
+
+podAnnotations:
+  iam.amazonaws.com/role: EKSKiamCertManger
+
+ingressShim:
+  defaultIssuerName: letsencrypt-prod
+  defaultIssuerKind: ClusterIssuer
+  defaultACMEDNS01ChallengeProvider: route53
+
+# Override the namespace used to store DNS provider credentials etc. for ClusterIssuer
+# resources. By default, the same namespace as cert-manager is deployed within is
+# used. This namespace will not be automatically created by the Helm chart.
+clusterResourceNamespace: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+
+resources: {}
+  # requests:
+  #   cpu: 10m
+  #   memory: 32Mi
+
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: false
+    prometheusInstance: default
+    targetPort: 9402
+    path: /metrics
+    interval: 60s
+    scrapeTimeout: 30s
+
+webhook:
+  enabled: false
+
+cainjector:
+  enabled: true
+  replicaCount: 1
+  resources: {}
+    # requests:
+    #   cpu: 10m
+    #   memory: 32Mi
+
+  image:
+    repository: quay.io/jetstack/cert-manager-cainjector
+    pullPolicy: IfNotPresent
+
+webhook:
+  enabled: false
