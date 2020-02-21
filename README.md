@@ -56,9 +56,14 @@ The infrastructure for the project is as defined below.
 ## Continued Development
 To continue development of this project view the reference for the project structure above. AWS resources can be added to the `infra` directory, new system/cluster services to the `cluster-ops/system-services` directory, new apps to the `cluster-ops/app-services` directory, new cluster configurations to the `cluster-ops/cluster-config` directory, and module development can be added to in the `modules` directory.
 
+Hello-K8s:
+The webpage message can be updated from the env section `cluster-ops/apps-services/service-values/hello-k8s-values.yaml` and the Helm chart can be updated from `cluster-ops/apps-services/charts/hello-k8s/`
+
 ## Project Considerations and Improvements
 * The EKS cluster implementation could easily be templated into a Terraform module such that multiple cluster envs could be brought up from that source.
 * The intial plan was to keep isolate services and cluster configs in the  `cluster-ops` directory to provide a delineation of their purpose. However, it adds overhead to managing state and services and could could be consolidated to a single deployment module that leverages both the Helm and Kubernetes provider to manage the cluster.
 * KIAM is a great as it provides an easy way to give cluster services AWS permissions, but the current implementation would be hard to manage and should be broken out into its own module to keep service roles indpedent and maintainable.
 * The only resource in the cluster that couldn't be Terraformed is the ClusterIssuer as the Kubernetes provider does not support CRDs. The best recomendation I could find is a local provisioner exec to apply it, but that is not very elegant. A better way would be to include the issuer in a custom modification of the cert manager chart and have Terraform template the domain and email into it when it deploys.
 * Once things are fully modularized this setup can be integrated into a pipeline to create an EKS cluster creation job for clustering on the fly.
+* Ensure resource limits across services. With HPA enabled it's crucial to ensure a bug doesn't burn your infrastructure bill.
+* Implement additional scheduling affinity to schedule backend services to the private node group.

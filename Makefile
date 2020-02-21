@@ -1,13 +1,13 @@
 .PHONY: infra
 
-cluster-up: infra standup-cluster standup-systems standup-apps
+cluster-up: infra standup-cluster helm-repos standup-systems standup-apps
 
 infra:
 	cd ./infra && \
 	terraform init && \
 	terraform apply --auto-approve && \
-	$(terraform output -json | jq -r .update_kubeconfig_cmd.value) && \
-	$(terraform output -json | jq -r .switch_cluster_context.value) 
+	$$(terraform output -json | jq -r .update_kubeconfig_cmd.value) && \
+	$$(terraform output -json | jq -r .switch_cluster_context.value)
 
 standup-cluster:
 	cd ./cluster-ops/cluster-config && \
@@ -49,7 +49,7 @@ take-down-infra:
 	terraform destroy -force --auto-approve
 
 helm-repos:
-	helm repo add jetstack https://charts.jetstack.io && \
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com && \
+	helm repo add jetstack https://charts.jetstack.io && \
 	helm repo add uswitch https://uswitch.github.io/kiam-helm-charts/charts && \
 	helm repo update
