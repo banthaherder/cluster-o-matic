@@ -49,4 +49,4 @@ autoscaling:
 
 env:
   - name: MESSAGE
-    value: "OTUS Infrastructure Challenge - 200 OK"
+    value: "200 OK - Hello K8s!!"
