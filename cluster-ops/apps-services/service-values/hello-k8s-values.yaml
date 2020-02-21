@@ -1,0 +1,52 @@
+# Default values for hello-k8s.
+
+replicaCount: 1
+
+image:
+  repository: paulbouwer/hello-kubernetes
+  tag: 1.7
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+
+service:
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "nginx"    
+    cert-manager.io/issuer: "letsencrypt-prod"
+    kubernetes.io/tls-acme: "true"
+  tls:
+    - hosts:
+      - ${subdomain}.${base_domain}
+      secretName: letsencrypt-prod # < cert-manager will store the created certificate in this secret.
+
+  hosts:
+    - host: ${subdomain}.${base_domain}
+      paths: ["/"]
+
+resources:
+  limits:
+    cpu: 75m
+    memory: 64Mi
+  requests:
+    cpu: 75m
+    memory: 64Mi
+
+# affinity: {}
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationPercentage: 75
+
+env:
+  - name: MESSAGE
+    value: "OTUS Infrastructure Challenge - 200 OK"
