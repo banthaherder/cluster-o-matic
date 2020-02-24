@@ -46,9 +46,9 @@ The infrastructure for the project is as defined below.
     * Replace `570942073824` with your AWS Account ID. It is used to interpolate for resource creation and resource referencing during service deployment.
     * The Cluster's default name is `Oceanus` which is also used for context referencing, so if you do decide to use a different name ensure it has been updated in the Helm + Kubernetes providers.
     * `/cluster-ops/system-services/cert-generator.yaml` is leveraged to create the ClusterIssuer and you should update it with your email and your R53 zone.
-    ![cert-generator.yaml][imgs/cert-generator.png]
+    ![cert-generator.yaml](imgs/cert-generator.png)
     * The `base_domain` is a top level domain name used to automate DNS record creation in the service module. Replace this with the same domain you are using in the ClusterIssuer.
-    ![base_domain in app module][imgs/app-base-domain.png]
+    ![base_domain in app module](imgs/app-base-domain.png)
 2. This project leverages a simple Makefile to execute the Terraform applies in a procedural to bring up and take down a cluster. Executing `make cluster-up` will bring up the infrastructure, configure the local machine's kubeconfig, update the cluster context, configure the cluster's namespaces, bring up system services, and deploy the [hello-k8s](https://github.com/paulbouwer/hello-kubernetes) app.
 3. Once it is complete you can view the service at `https://hello-k8s.$YOUR_DOMAIN.com`. Everything has been configured and is good to.
 4. To teardown exectute `make cluster-down` in the top level directory. This will inversely tear down the services and resources used to bring the cluster up.

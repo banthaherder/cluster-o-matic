@@ -1,6 +1,6 @@
 .PHONY: infra
 
-cluster-up: infra standup-cluster helm-repos standup-systems standup-apps
+cluster-up: infra standup-cluster standup-systems standup-apps
 
 infra:
 	cd ./infra && \
@@ -14,13 +14,13 @@ standup-cluster:
 	terraform init && \
 	terraform apply --auto-approve
 
-standup-systems:
+standup-systems: helm-repos
 	cd ./cluster-ops/system-services && \
 	terraform init && \
 	terraform apply --auto-approve && \
 	kubectl apply -f cert-generator.yaml
 
-standup-apps:
+standup-apps: helm-repos
 	cd ./cluster-ops/apps-services && \
 	terraform init && \
 	terraform apply --auto-approve
