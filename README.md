@@ -36,7 +36,7 @@ The infrastructure for the project is as defined below.
 
 ## Prereqs
 1. An AWS account in which you have configured local credentials, via the awscli, for a user with proper permisisons to create the variety resources required to bring up an EKS cluster.
-2. Kubectl and Helm installed locally (`brew install kubectl && brew install helm`).
+2. Kubectl and Helm V3 installed locally (`brew install kubectl && brew install helm`). 
 3. An AWS S3 bucket for state storage.
 4. A Route53 Hosted Zone you can create records in.
 
